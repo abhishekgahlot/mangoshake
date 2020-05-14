@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import os
 
 data_dir = pathlib.Path('./scaled')
+test_dir = pathlib.Path('./test')
 
 image_count = len(list(data_dir.glob('*/*.png')))
 
@@ -15,7 +16,7 @@ CLASS_NAMES = np.array([item.name for item in data_dir.glob('*') if item.name !=
 
 print(image_count, CLASS_NAMES)
 
-image_generator = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1./255)
+image_generator = tf.keras.preprocessing.image.ImageDataGenerator()
 
 image_res = (300, 140)
 
@@ -28,21 +29,27 @@ train_data_gen = image_generator.flow_from_directory(directory=str(data_dir),
                                                      batch_size=BATCH_SIZE,
                                                      shuffle=True,
                                                      target_size=(IMG_HEIGHT, IMG_WIDTH),
-                                                     classes = list(CLASS_NAMES))
+                                                     classes = list(CLASS_NAMES), class_mode="sparse")
+
+test_it_gen = image_generator.flow_from_directory(directory=str(test_dir),
+                                                     batch_size=BATCH_SIZE,
+                                                     shuffle=True,
+                                                     target_size=(IMG_HEIGHT, IMG_WIDTH),
+                                                     classes = list(CLASS_NAMES), class_mode="sparse")
 
 model = tf.keras.models.Sequential([
-	tf.keras.layers.Conv2D(64, (3,3), activation='relu', input_shape=(IMG_WIDTH, IMG_HEIGHT, 1)),
-	tf.keras.layers.MaxPooling2D(2, 2),
-	tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+	tf.keras.layers.Conv2D(64, (3,3), activation='relu', input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
 	tf.keras.layers.MaxPooling2D(2, 2),
 	tf.keras.layers.Flatten(),
 	tf.keras.layers.Dense(256, activation=tf.nn.relu),
-	tf.keras.layers.Dense(10, activation=tf.nn.softmax)
+	tf.keras.layers.Dense(3, activation=tf.nn.softmax)
 ])
+
+print(model.summary())
 model.compile(optimizer='adam',
 							loss='sparse_categorical_crossentropy',
 							metrics=['accuracy'])
-model.fit(train_data_gen, steps_per_epoch=16)
+model.fit(train_data_gen, epochs=5)
 
 #
 #def show_batch(image_batch, label_batch):
