@@ -1,3 +1,16 @@
+'''
+The goal is to select images, crop them, scale them first.
+Using crop_and_scale_image to bring resolution to 300 x 209.
+We then do a labelling if the position should have been long, short, or nothing.
+We move the images to respective location for training
+    training/long
+    training/short
+    training/nothing
+We also split the images for testing data as well
+    test/long
+    test/short
+    test/nothing
+'''
 import tensorflow as tf
 
 import pathlib
@@ -16,7 +29,7 @@ CLASS_NAMES = np.array([item.name for item in data_dir.glob('*') if item.name !=
 
 print(image_count, CLASS_NAMES)
 
-image_generator = tf.keras.preprocessing.image.ImageDataGenerator()
+image_generator = tf.keras.preprocessing.image.ImageDataGenerator()	
 
 image_res = (300, 140)
 
